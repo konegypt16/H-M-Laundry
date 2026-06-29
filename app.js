@@ -25,11 +25,9 @@ const state = {
 };
 
 // ================= الاستماع اللحظي للبيانات العالمية (Realtime Listeners) =================
-// جلب الإعدادات (رقم الواتساب ونظام النقاط) تلقائياً بمجرد فتح الموقع
 db.ref('config').on('value', (snapshot) => {
     if (snapshot.exists()) {
         state.config = snapshot.val();
-        // تحديث خانات لوحة التحكم تلقائياً إذا كان الأدمن فاتح الصفحة
         document.getElementById('adm-whatsapp-phone').value = state.config.whatsapp;
         document.getElementById('adm-fallback-points').value = state.config.pointsRatio;
         document.getElementById('adm-discount-value').value = state.config.discountPerPoint;
@@ -37,7 +35,6 @@ db.ref('config').on('value', (snapshot) => {
     }
 });
 
-// جلب قائمة الخدمات الحية من السيرفر وعرضها فوراً
 db.ref('services').on('value', (snapshot) => {
     state.services = [];
     if (snapshot.exists()) {
@@ -46,7 +43,7 @@ db.ref('services').on('value', (snapshot) => {
             state.services.push({ id, ...data[id] });
         });
     } else {
-        // خدمات أولية افتراضية تظهر فقط لو كانت قاعدة البيانات فارغة تماماً لأول مرة
+        // خدمات افتراضية ممتازة لحين قيامك بإضافة خدماتك بالصور من لوحة التحكم
         state.services = [
             { id: "s1", name: "غسيل ومكواة قميص", price: 15, cat: "رجالي", icon: "👕" },
             { id: "s2", name: "بدلة كاملة ديركت", price: 70, cat: "رجالي", icon: "🧥" },
@@ -69,20 +66,15 @@ function navigateTo(screenId) {
 
 document.getElementById('btn-start').addEventListener('click', () => navigateTo('screen-auth'));
 
-// منطق التحقق والإنشاء التلقائي للحسابات بكلمة المرور في السيرفر السحابي
 document.getElementById('auth-form').addEventListener('submit', (e) => {
     const name = document.getElementById('user-name').value.trim();
     const phone = document.getElementById('user-phone').value.trim();
     const password = document.getElementById('user-password').value;
-    
-    // تنظيف رقم الهاتف ليكون معرفاً فريداً لكل مستخدم بالسيرفر
     const userKey = 'u_' + phone.replace(/[^0-9]/g, '');
 
-    // استعلام صامت وسريع من السيرفر عن هذا الحساب
     db.ref('users/' + userKey).once('value').then((snapshot) => {
         if (snapshot.exists()) {
             const existingUser = snapshot.val();
-            // التحقق من كلمة المرور
             if (existingUser.password === password) {
                 state.user = existingUser;
             } else {
@@ -90,13 +82,11 @@ document.getElementById('auth-form').addEventListener('submit', (e) => {
                 return;
             }
         } else {
-            // حساب جديد تماماً -> إنشاؤه فوراً بنقاط ترحيبية (10 نقاط) وحفظ كلمة المرور
             state.user = { name: name, phone: phone, password: password, points: 10 };
             db.ref('users/' + userKey).set(state.user);
             alert("✨ أهلاً بك! تم إنشاء حساب جديد لك ومنحك 10 نقاط ترحيبية هدية.");
         }
 
-        // تحديث واجهة العميل بالبيانات السحابية الجديدة
         document.getElementById('display-user-name').innerText = state.user.name;
         document.getElementById('display-user-points').innerText = state.user.points;
         
@@ -111,7 +101,7 @@ document.getElementById('btn-logout').addEventListener('click', () => {
     navigateTo('screen-welcome');
 });
 
-// ================= إدارة بناء الخدمات والتبويبات =================
+// ================= إدارة بناء الخدمات والتبويبات بالصور =================
 function renderCategories() {
     const wrapper = document.getElementById('tabs-wrapper');
     wrapper.innerHTML = "";
@@ -149,8 +139,15 @@ function renderServices() {
         const qty = state.cart[srv.id] || 0;
         const card = document.createElement('div');
         card.className = `service-card ${qty > 0 ? 'selected' : ''}`;
+        
+        // التحقق الذكي: لو الرابط يبدأ بـ http يتم عرضه كصورة، لو لاء كإيموجي نصي عادي
+        const isImg = srv.icon && srv.icon.startsWith('http');
+        const imgHtml = isImg 
+            ? `<img src="${srv.icon}" class="service-img-sim" alt="${srv.name}">`
+            : `<div class="service-img-sim">${srv.icon || '👕'}</div>`;
+
         card.innerHTML = `
-            <div class="service-img-sim">${srv.icon}</div>
+            ${imgHtml}
             <div class="service-name">${srv.name}</div>
             <div class="service-price">${srv.price} جنيه</div>
             <div class="quantity-control">
@@ -217,7 +214,7 @@ document.getElementById('btn-apply-discount').addEventListener('click', () => {
     recalculateCart();
 });
 
-// ================= تشغيل لوحة التحكم السرية العالمية للأدمن =================
+// ================= لوحة التحكم السرية للأدمن =================
 let copyrightClickCount = 0;
 let copyrightTimeout;
 
@@ -241,7 +238,6 @@ document.getElementById('btn-close-admin').addEventListener('click', () => {
     document.getElementById('admin-dashboard').classList.remove('open');
 });
 
-// حفظ إعدادات النظام وتغيير رقم الواتساب حياً في السيرفر للكل
 document.getElementById('btn-save-sys-config').addEventListener('click', () => {
     const wpNum = document.getElementById('adm-whatsapp-phone').value.trim();
     const ratio = Number(document.getElementById('adm-fallback-points').value);
@@ -253,7 +249,6 @@ document.getElementById('btn-save-sys-config').addEventListener('click', () => {
     .then(() => alert("تم تحديث الإعدادات السحابية بنجاح لملايين المستخدمين!"));
 });
 
-// إضافة خدمة جديدة ومزامنتها للسيرفر في نفس الثانية
 document.getElementById('btn-add-service').addEventListener('click', () => {
     const name = document.getElementById('adm-service-name').value.trim();
     const price = Number(document.getElementById('adm-service-price').value);
@@ -265,13 +260,14 @@ document.getElementById('btn-add-service').addEventListener('click', () => {
     const newServiceRef = db.ref('services').push(); 
     newServiceRef.set({ name, price, cat, icon })
     .then(() => {
-        alert(`تم رفع خدمة [${name}] على السيرفر بنجاح!`);
+        alert(`تم رفع خدمة [${name}] بسعر ${price} ج.م وصورتها بنجاح!`);
         document.getElementById('adm-service-name').value = "";
         document.getElementById('adm-service-price').value = "";
+        document.getElementById('adm-service-icon').value = "👕";
     });
 });
 
-// ================= إرسال الطلب وتحديث النقاط الحية بالسيرفر =================
+// ================= إرسال الطلب وتحديث النقاط =================
 document.getElementById('btn-whatsapp-confirm').addEventListener('click', () => {
     let orderDetails = [];
     let currentTotal = 0;
@@ -286,15 +282,11 @@ document.getElementById('btn-whatsapp-confirm').addEventListener('click', () => 
     
     if (orderDetails.length === 0) { alert("سلتك فارغة! اختر خدماتك أولاً."); return; }
     
-    // حساب النقاط الجديدة بناءً على معدل الأسعار من السيرفر
     const earnedPoints = Math.floor(currentTotal / state.config.pointsRatio);
     let finalPoints = state.user.points + earnedPoints;
     
-    if (state.isDiscountApplied) {
-        finalPoints = earnedPoints; // تصفير النقاط القديمة لأنها استُبدلت بخصم
-    }
+    if (state.isDiscountApplied) { finalPoints = earnedPoints; }
     
-    // تحديث نقاط المستخدم صامتاً في قاعدة البيانات السحابية فوراً قبل فتح الواتساب
     const userKey = 'u_' + state.user.phone.replace(/[^0-9]/g, '');
     db.ref('users/' + userKey + '/points').set(finalPoints);
     
