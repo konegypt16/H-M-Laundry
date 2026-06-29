@@ -9,7 +9,6 @@ const firebaseConfig = {
     appId: "1:1234:web:1234"
 };
 
-// تهيئة وتشغيل الـ Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -21,10 +20,11 @@ const state = {
     services: [], 
     cart: {},
     activeCategory: "الكل",
-    isDiscountApplied: false
+    isDiscountApplied: false,
+    searchedUserKey: null // لتخزين حساب العميل الجاري تعديل نقاطه في لوحة الإدارة
 };
 
-// ================= الاستماع اللحظي للبيانات العالمية (Realtime Listeners) =================
+// ================= الاستماع اللحظي للبيانات العالمية =================
 db.ref('config').on('value', (snapshot) => {
     if (snapshot.exists()) {
         state.config = snapshot.val();
@@ -43,7 +43,6 @@ db.ref('services').on('value', (snapshot) => {
             state.services.push({ id, ...data[id] });
         });
     } else {
-        // خدمات افتراضية ممتازة لحين قيامك بإضافة خدماتك بالصور من لوحة التحكم
         state.services = [
             { id: "s1", name: "غسيل ومكواة قميص", price: 15, cat: "رجالي", icon: "👕" },
             { id: "s2", name: "بدلة كاملة ديركت", price: 70, cat: "رجالي", icon: "🧥" },
@@ -55,7 +54,7 @@ db.ref('services').on('value', (snapshot) => {
     renderServices();
 });
 
-// ================= نظام التنقل السلس والتحقق الصامت من الحسابات =================
+// ================= نظام التنقل السلس والتحقق من الحسابات =================
 function navigateTo(screenId) {
     document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
     setTimeout(() => {
@@ -140,7 +139,6 @@ function renderServices() {
         const card = document.createElement('div');
         card.className = `service-card ${qty > 0 ? 'selected' : ''}`;
         
-        // التحقق الذكي: لو الرابط يبدأ بـ http يتم عرضه كصورة، لو لاء كإيموجي نصي عادي
         const isImg = srv.icon && srv.icon.startsWith('http');
         const imgHtml = isImg 
             ? `<img src="${srv.icon}" class="service-img-sim" alt="${srv.name}">`
@@ -214,7 +212,7 @@ document.getElementById('btn-apply-discount').addEventListener('click', () => {
     recalculateCart();
 });
 
-// ================= لوحة التحكم السرية للأدمن =================
+// ================= لوحة التحكم السرية للأدمن وإدارة النقاط اليدوية =================
 let copyrightClickCount = 0;
 let copyrightTimeout;
 
@@ -236,6 +234,44 @@ document.getElementById('copyright-text').addEventListener('click', () => {
 
 document.getElementById('btn-close-admin').addEventListener('click', () => {
     document.getElementById('admin-dashboard').classList.remove('open');
+});
+
+// منطق البحث عن المستخدم برقم الهاتف في لوحة الأدمن
+document.getElementById('btn-search-user').addEventListener('click', () => {
+    const phone = document.getElementById('adm-search-phone').value.trim();
+    if (!phone) { alert("أدخل رقم هاتف أولاً!"); return; }
+    
+    const userKey = 'u_' + phone.replace(/[^0-9]/g, '');
+    state.searchedUserKey = userKey;
+
+    db.ref('users/' + userKey).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            document.getElementById('adm-res-name').innerText = userData.name;
+            document.getElementById('adm-res-points').value = userData.points;
+            document.getElementById('adm-user-result').classList.remove('hidden');
+        } else {
+            alert("⚠️ هذا الرقم غير مسجل في السيرفر حالياً.");
+            document.getElementById('adm-user-result').classList.add('hidden');
+        }
+    });
+});
+
+// تحديث وحفظ النقاط في السيرفر يدويًا عند اكتمال الطلب
+document.getElementById('btn-update-user-points').addEventListener('click', () => {
+    if (!state.searchedUserKey) return;
+    const newPoints = Number(document.getElementById('adm-res-points').value);
+    
+    db.ref('users/' + state.searchedUserKey + '/points').set(newPoints)
+    .then(() => {
+        alert("✓ تم تحديث نقاط العميل بنجاح في قاعدة البيانات الحية!");
+        // إذا كان العميل الحالي هو نفسه الأدمن للتجربة، نقوم بتحديث واجهته فوراً
+        if ('u_' + state.user.phone.replace(/[^0-9]/g, '') === state.searchedUserKey) {
+            state.user.points = newPoints;
+            document.getElementById('display-user-points').innerText = newPoints;
+            recalculateCart();
+        }
+    });
 });
 
 document.getElementById('btn-save-sys-config').addEventListener('click', () => {
@@ -267,7 +303,7 @@ document.getElementById('btn-add-service').addEventListener('click', () => {
     });
 });
 
-// ================= إرسال الطلب وتحديث النقاط =================
+// ================= إرسال الطلب الصافي (بدون تحديث تلقائي آلي للنقاط) =================
 document.getElementById('btn-whatsapp-confirm').addEventListener('click', () => {
     let orderDetails = [];
     let currentTotal = 0;
@@ -282,32 +318,25 @@ document.getElementById('btn-whatsapp-confirm').addEventListener('click', () => 
     
     if (orderDetails.length === 0) { alert("سلتك فارغة! اختر خدماتك أولاً."); return; }
     
-    const earnedPoints = Math.floor(currentTotal / state.config.pointsRatio);
-    let finalPoints = state.user.points + earnedPoints;
-    
-    if (state.isDiscountApplied) { finalPoints = earnedPoints; }
-    
-    const userKey = 'u_' + state.user.phone.replace(/[^0-9]/g, '');
-    db.ref('users/' + userKey + '/points').set(finalPoints);
-    
-    state.user.points = finalPoints;
-    document.getElementById('display-user-points').innerText = finalPoints;
+    // حساب النقاط المتوقع كسبها لعرضها في رسالة الواتساب لتراها أنت عند التنفيذ
+    const estimatedEarnedPoints = Math.floor(currentTotal / state.config.pointsRatio);
 
     const deliveryType = document.querySelector('input[name="delivery"]:checked').value;
     const deliveryStr = deliveryType === 'delivery' ? 'توصيل للمنزل 🛵' : 'استلام من المغسلة 🧺';
     const grandTotal = document.getElementById('total-price').innerText;
     
     const textMsg = `مرحباً H&M Laundry 🧼\n` +
-                    `طلب حجز غسيل جديد من:\n` +
+                    `طلب حجز غسيل جديد (مُعلّق لحين التأكيد والطلب):\n` +
                     `الاسم: ${state.user.name}\n` +
                     `الهاتف: ${state.user.phone}\n` +
                     `---------------------------\n` +
                     `القطع المطلوبة:\n${orderDetails.join('\n')}\n` +
                     `---------------------------\n` +
                     `طريقة التوصيل: ${deliveryStr}\n` +
-                    `الخصم المطبق: ${state.isDiscountApplied ? 'نعم (تم استبدال نقاط الولاء بالخصم)' : 'لا'}\n` +
+                    `طلب خصم النقاط: ${state.isDiscountApplied ? 'نعم (يرجى تصفير نقاطي القديمة)' : 'لا'}\n` +
                     `الحساب الإجمالي النهائي: *${grandTotal} جنيه مصري*\n` +
-                    `النقاط الحالية بحسابي: ${finalPoints} نقطة ✨`;
+                    `---------------------------\n` +
+                    `📢 ملحوظة للأدمن: يستحق العميل (+${estimatedEarnedPoints}) نقاط عند اكتمال هذا الطلب فعلياً.`;
                     
     window.open(`https://wa.me/${state.config.whatsapp}?text=${encodeURIComponent(textMsg)}`, '_blank');
 });
