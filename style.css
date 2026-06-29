@@ -1,0 +1,513 @@
+/* إعدادات وتصفير المتغيرات العامة للنظام */
+:root {
+    --primary-color: #007aff;
+    --primary-dark: #0056b3;
+    --accent-color: #34c759;
+    --whatsapp-color: #25d366;
+    --bg-dark: #121212;
+    --surface-dark: #1e1e1e;
+    --surface-card: #2a2a2a;
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+    --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Cairo', sans-serif;
+    -webkit-tap-highlight-color: transparent; /* منع الوميض الأزرق تماماً في الهواتف */
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+/* حاوية التطبيق الشاملة - محاكاة لتطبيق الهاتف الذكي */
+.app-container {
+    width: 100%;
+    max-width: 480px; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: var(--surface-dark);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* الشاشات وإيقاعات الحركة (Fade In) */
+.screen {
+    display: none;
+    opacity: 0;
+    padding: 20px;
+    flex: 1;
+    flex-direction: column;
+    transition: var(--transition-smooth);
+}
+
+.screen.active {
+    display: flex;
+    animation: fadeIn 0.4s forwards ease-in-out;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* أزرار مخصصة وعامة */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+.btn-primary-sm {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-secondary-sm {
+    background: #3a3a3c;
+    color: var(--text-main);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+/* تنسيق الشاشة 1: الترحيب */
+#screen-welcome {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.logo-wrapper {
+    margin-bottom: 25px;
+}
+
+.logo-icon {
+    font-size: 5rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.logo-wrapper h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.logo-wrapper h1 span {
+    color: var(--primary-color);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    font-size: 1.05rem;
+}
+
+/* تنسيق الشاشة 2: كارت تسجيل الدخول */
+#screen-auth {
+    justify-content: center;
+}
+
+.auth-card {
+    background-color: var(--surface-card);
+    padding: 30px 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.auth-card h2 {
+    margin-bottom: 10px;
+    font-size: 1.6rem;
+}
+
+.auth-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.input-group label {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.input-group input, .input-group select {
+    background-color: #2c2c2e;
+    border: 1px solid #3a3a3c;
+    padding: 12px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+.input-group input:focus {
+    border-color: var(--primary-color);
+}
+
+/* تنسيق الشاشة 3: الخدمات والطلب */
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--surface-card);
+    padding: 12px 15px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    font-size: 1.8rem;
+    background: #3a3a3c;
+    padding: 6px;
+    border-radius: 50%;
+}
+
+.points-badge {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* شريط التبويبات الأفقي القابل للسحب */
+.tabs-container {
+    overflow-x: auto;
+    margin-bottom: 15px;
+    scrollbar-width: none;
+}
+
+.tabs-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tabs-scroll {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 5px;
+}
+
+.tab-btn {
+    background-color: var(--surface-card);
+    color: var(--text-muted);
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.tab-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* شبكة كروت الخدمات الاستجابة المتقنة */
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-bottom: 240px; /* لمنع حجب الفوتر للخدمات في الأسفل */
+}
+
+.service-card {
+    background-color: var(--surface-card);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: var(--transition-smooth);
+    border: 1px solid transparent;
+}
+
+.service-card.selected {
+    border-color: var(--primary-color);
+    background-color: #22354a;
+}
+
+.service-img-sim {
+    font-size: 2.8rem;
+    margin-bottom: 8px;
+}
+
+.service-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.service-price {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+/* أزرار التحكم بالكمية */
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1c1c1e;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.btn-qty {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+}
+
+.qty-val {
+    font-weight: 600;
+    font-size: 0.95rem;
+    min-width: 15px;
+}
+
+/* الفوتر السفلي الثابت وخيارات الدفع والتوصيل */
+.checkout-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1c1c1e;
+    border-top: 1px solid #2c2c2e;
+    padding: 15px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+.delivery-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.radio-tile {
+    position: relative;
+    background: var(--surface-card);
+    border: 1px solid #3a3a3c;
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.radio-tile input {
+    position: absolute;
+    opacity: 0;
+}
+
+.radio-tile:has(input:checked) {
+    border-color: var(--primary-color);
+    background: #22354a;
+}
+
+.radio-icon { font-size: 1.1rem; }
+.radio-label { font-size: 0.8rem; font-weight: 600; }
+
+/* صندوق الولاء والخصم المالي الديماميكي */
+.loyalty-box {
+    background: #2c1a30;
+    border: 1px dashed #bf5af2;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.loyalty-box p { font-size: 0.8rem; color: #e5bfeb; }
+.btn-accent {
+    background-color: #bf5af2;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-accent.applied {
+    background-color: var(--accent-color);
+}
+
+.hidden { display: none !important; }
+
+/* ملخص الحساب */
+.price-summary {
+    margin-bottom: 12px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.total-row {
+    font-size: 1.2rem;
+    color: var(--text-main);
+    font-weight: 700;
+    border-top: 1px solid #2c2c2e;
+    padding-top: 6px;
+    margin-top: 6px;
+}
+
+/* زر إرسال واتساب المخصص */
+.btn-whatsapp {
+    background-color: var(--whatsapp-color);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.btn-whatsapp:active { transform: scale(0.98); }
+
+/* لوحة التحكم السرية (Admin Modal) */
+.admin-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.admin-modal.open { display: flex; }
+
+.admin-content {
+    background: var(--surface-dark);
+    border: 2px solid var(--primary-color);
+    width: 100%;
+    max-width: 440px;
+    border-radius: 20px;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #2c2c2e;
+    padding-bottom: 10px;
+}
+
+.admin-header h2 { font-size: 1.2rem; color: var(--primary-color); }
+.btn-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.admin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-card {
+    background: var(--surface-card);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.admin-card h3 { font-size: 1rem; margin-bottom: 12px; color: #ffd60a; }
+
+/* فوتر الحقوق الخارجي لتفعيل اللوحة السرية */
+.app-footer {
+    padding: 15px;
+    text-align: center;
+    background-color: #121212;
+}
+
+#copyright-text {
+    font-size: 0.75rem;
+    color: #48484a;
+    cursor: pointer;
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H&M Laundry | مغسلة إتش أند إم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <section id="screen-welcome" class="screen active">
+            <div class="welcome-content">
+                <div class="logo-wrapper">
+                    <div class="logo-icon">🧼</div>
+                    <h1>H&M <span>Laundry</span></h1>
+                </div>
+                <p class="subtitle">العناية الفائقة بملابسك نقرة واحدة بعيداً عنك</p>
+                <button id="btn-start" class="btn-primary">احجز الآن</button>
+            </div>
+        </section>
+
+        <section id="screen-auth" class="screen">
+            <div class="auth-card">
+                <h2>مرحباً بك في H&M</h2>
+                <p>سجل دخولك أو أنشئ حساباً جديداً لمتابعة الطلب ونقاط الولاء</p>
+                
+                <form id="auth-form" onsubmit="event.preventDefault();">
+                    <div class="input-group">
+                        <label for="user-name">الاسم الكامل</label>
+                        <input type="text" id="user-name" placeholder="أدخل اسمك الثلاثي" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="user-phone">رقم الهاتف</label>
+                        <input type="tel" id="user-phone" placeholder="01xxxxxxxxx" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="user-password">كلمة المرور</label>
+                        <input type="password" id="user-password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" id="btn-login" class="btn-primary">دخول / تسجيل</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="screen-services" class="screen">
+            <header class="user-header">
+                <div class="user-info">
+                    <span class="user-avatar">👤</span>
+                    <div>
+                        <h3 id="display-user-name">جاري جلب البيانات...</h3>
+                        <p class="points-badge">النقاط الحالية: <span id="display-user-points">0</span></p>
+                    </div>
+                </div>
+                <button id="btn-logout" class="btn-secondary-sm">خروج</button>
+            </header>
+
+            <nav class="tabs-container">
+                <div class="tabs-scroll" id="tabs-wrapper">
+                    </div>
+            </nav>
+
+            <main class="services-grid" id="services-wrapper">
+                </main>
+
+            <footer class="checkout-footer">
+                <div class="delivery-options">
+                    <label class="radio-tile">
+                        <input type="radio" name="delivery" value="pickup" checked>
+                        <span class="radio-icon">🧺</span>
+                        <span class="radio-label">استلام من المغسلة</span>
+                    </label>
+                    <label class="radio-tile">
+                        <input type="radio" name="delivery" value="delivery">
+                        <span class="radio-icon">🛵</span>
+                        <span class="radio-label">توصيل للمنزل (+20 ج.م)</span>
+                    </label>
+                </div>
+
+                <div id="loyalty-discount-section" class="loyalty-box hidden">
+                    <p>لديك نقاط كافية! هل تريد استبدالها بخصم مالي؟</p>
+                    <button id="btn-apply-discount" class="btn-accent">تطبيق الخصم</button>
+                </div>
+
+                <div class="price-summary">
+                    <div class="summary-row">
+                        <span>إجمالي القطع المختارة:</span>
+                        <span id="total-items">0</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>الإجمالي النهائي الحقيقي:</span>
+                        <span><span id="total-price">0</span> جنيه</span>
+                    </div>
+                </div>
+
+                <button id="btn-whatsapp-confirm" class="btn-whatsapp">
+                    <span>تأكيد الحجز عبر الواتساب</span>
+                    <span class="ws-icon">💬</span>
+                </button>
+            </footer>
+        </section>
+
+        <div id="admin-dashboard" class="admin-modal">
+            <div class="admin-content">
+                <div class="admin-header">
+                    <h2>لوحة التحكم السرية لإدارة نظام H&M</h2>
+                    <button id="btn-close-admin" class="btn-close">&times;</button>
+                </div>
+                
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <h3>⚙️ إعدادات النظام والاتصال السحابي</h3>
+                        <div class="input-group">
+                            <label>رقم واتساب المغسلة (بالصيغة الدولية مثل: 201012345678)</label>
+                            <input type="text" id="adm-whatsapp-phone" value="201000000000">
+                        </div>
+                        <div class="input-group">
+                            <label>قيمة المشتريات مقابل كل نقطة؟ (جنيه لكل نقطة)</label>
+                            <input type="number" id="adm-fallback-points" value="20">
+                        </div>
+                        <div class="input-group">
+                            <label>قيمة الخصم المالي الفعلي لكل نقطة مستبدلة (جنيه)</label>
+                            <input type="number" id="adm-discount-value" value="0.5">
+                        </div>
+                        <button id="btn-save-sys-config" class="btn-primary-sm">حفظ الإعدادات في السيرفر</button>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3>➕ إضافة خدمة جديدة ومزامنتها للجميع</h3>
+                        <div class="input-group">
+                            <label>القسم المخصص للخدمة</label>
+                            <select id="adm-service-category">
+                                </select>
+                        </div>
+                        <div class="input-group">
+                            <label>اسم الخدمة</label>
+                            <input type="text" id="adm-service-name" placeholder="أدخل اسم الخدمة">
+                        </div>
+                        <div class="input-group">
+                            <label>السعر الأساسي (جنيه)</label>
+                            <input type="number" id="adm-service-price" placeholder="0">
+                        </div>
+                        <div class="input-group">
+                            <label>أيقونة الخدمة / إيموجي تعبيري</label>
+                            <input type="text" id="adm-service-icon" placeholder="👕" value="👕">
+                        </div>
+                        <button id="btn-add-service" class="btn-primary-sm">إضافة الخدمة فوراً</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="app-footer">
+            <p id="copyright-text">جميع الحقوق محفوظة © 2026 لـ H&M Laundry</p>
+        </footer>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>
